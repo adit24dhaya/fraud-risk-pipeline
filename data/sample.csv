@@ -1,0 +1,6 @@
+transaction_id,card_id,amount,merchant,country,hour,is_fraud
+txn_001,card_001,24.50,grocery_us,US,13,0
+txn_002,card_001,420.00,new_electronics,US,23,1
+txn_003,card_002,12.10,coffee_us,US,8,0
+txn_004,card_003,780.00,cross_border_luxury,CA,2,1
+txn_005,card_004,65.00,fuel_us,US,18,0
