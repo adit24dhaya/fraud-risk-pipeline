@@ -1,0 +1,25 @@
+# OS/editor noise
+.DS_Store
+
+# Python/local environments
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Build/test artifacts
+dist/
+build/
+coverage/
+
+# Agent/tool generated artifacts
+.graphify_*
+graphify-out/
+repomix-output.*
+.serena/cache/
+.serena/project.local.yml

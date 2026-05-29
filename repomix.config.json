@@ -1,0 +1,26 @@
+{
+  "output": {
+    "filePath": "repomix-output.xml",
+    "style": "xml",
+    "compress": true,
+    "topFilesLength": 15
+  },
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      "node_modules/**",
+      ".venv/**",
+      "venv/**",
+      "dist/**",
+      "build/**",
+      "coverage/**",
+      "graphify-out/cache/**",
+      "repomix-output.*",
+      ".serena/cache/**"
+    ]
+  },
+  "security": {
+    "enableSecurityCheck": true
+  }
+}
