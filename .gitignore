@@ -20,6 +20,7 @@ coverage/
 # Agent/tool generated artifacts
 .graphify_*
 graphify-out/
+kaggle_output/
 repomix-output.*
 .serena/cache/
 .serena/project.local.yml

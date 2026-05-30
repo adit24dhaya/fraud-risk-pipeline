@@ -1,24 +1,19 @@
-# Fraud Risk Baseline Model
+# Fraud Risk XGBoost Model
 
-## Intended Use
-Transaction-risk screening for analyst review. The model does not make final fraud determinations.
+## Dataset
+IEEE-CIS Fraud Detection from Kaggle.
 
-## Data Note
-These metrics are from the committed sample scaffold dataset. Replace with IEEE-CIS or ULB data before treating scores as meaningful.
+## Split
+Time-based split using `TransactionDT`; final 20% held out for test.
 
 ## Headline Metrics
-- PR-AUC: 1.0000
-- Precision: 1.0000
-- Recall: 1.0000
+- PR-AUC: 0.4402
+- Precision: 0.3059
+- Recall: 0.5413
 
 ## Threshold
-Decision threshold: 0.2103
+Decision threshold: 0.7227
+Threshold selected by expected cost, with missed fraud weighted higher than false positives.
 
-Threshold is selected by expected cost, weighing missed fraud higher than false positives.
-
-## Features
-- amount
-- amount_log
-- night_transaction
-- new_merchant_hint
-- cross_border_hint
+## Notes
+Accuracy is not used as a headline metric because fraud data is imbalanced.

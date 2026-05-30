@@ -1,6 +1,6 @@
 {
-  "threshold": 0.2103,
-  "expected_cost": 0.0,
+  "threshold": 0.722727,
+  "expected_cost": 19903.0,
   "false_positive_cost": 1.0,
   "false_negative_cost": 8.0
 }

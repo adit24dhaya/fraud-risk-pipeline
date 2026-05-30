@@ -49,11 +49,11 @@ Response shape:
 
 | Model | Split | PR-AUC | Precision | Recall | Threshold |
 | --- | --- | ---: | ---: | ---: | ---: |
-| XGBoost scaffold baseline | time-based sample split | 1.000 | 1.000 | 1.000 | 0.210 |
+| XGBoost v1 | IEEE-CIS time-based final 20% | 0.440 | 0.306 | 0.541 | 0.723 |
 
 Accuracy is intentionally not used as the headline metric because fraud data is highly imbalanced.
 
-Current metrics are from the tiny committed sample dataset so the repo can run end-to-end. They prove the pipeline works; they are not final model-quality claims.
+The committed `data/sample.csv` remains tiny so the repo can run without the full Kaggle download. Full training metrics above come from the IEEE-CIS Kaggle dataset.
 
 ## Local Development
 
@@ -64,6 +64,14 @@ make serve
 ```
 
 Then visit `http://localhost:8000/docs`.
+
+## Full Training
+
+The full IEEE-CIS run is executed on Kaggle with GPU enabled:
+
+https://www.kaggle.com/code/aditya2402/fraud-risk-pipeline-ieee-cis-train
+
+The reproducible kernel source lives in `kaggle_kernel/`. It writes the committed model and metric artifacts in `artifacts/`.
 
 ## Project Status
 
