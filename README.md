@@ -2,7 +2,7 @@
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-coming%20soon-lightgrey)](#)
 
-A deployed real-time transaction-risk system: imbalanced-data fraud model with cost-based thresholding, SHAP explainability, Evidently drift monitoring, and an on-demand LLM analyst-summary layer built as a reusable explainability component shared with a healthcare risk console.
+A real-time transaction-risk system: imbalanced-data fraud model with cost-based thresholding, Tree SHAP explainability, Evidently drift monitoring, and a reusable template-based analyst summary (same framing as a healthcare risk console; optional LLM on-demand in V2).
 
 ## What This Shows
 
@@ -13,11 +13,11 @@ This is a production-style fraud/risk service, not a notebook. A user sends a tr
 - top feature contributions using XGBoost Tree SHAP values
 - plain-English analyst summary
 
-The fast scoring path is intentionally separate from the LLM layer:
+Scoring path:
 
-`transaction -> feature pipeline -> model -> probability`
+`transaction -> feature alignment -> XGBoost -> probability + threshold decision -> Tree SHAP -> analyst summary`
 
-The LLM summary is on-demand for human analyst review. It must never block the real-time scoring path.
+The analyst summary is template-based from SHAP drivers and uses the same cost-based threshold as the API decision (not a fixed 0.5 cutoff).
 
 ## API
 
@@ -61,9 +61,35 @@ The committed `data/sample.csv` remains tiny so the repo can run without the ful
 make install
 make test
 make serve
+make monitor   # Evidently drift HTML + JSON under docs/media/
 ```
 
 Then visit `http://localhost:8000/docs`.
+
+Streamlit UI (API must be running):
+
+```bash
+make ui
+```
+
+## Deploy (Fly.io)
+
+Requires [Fly CLI](https://fly.io/docs/hands-on/install-flyctl/) and a Fly account.
+
+```bash
+fly apps create fraud-risk-pipeline   # once
+fly deploy
+fly open /docs
+```
+
+The `Dockerfile` bundles `artifacts/xgboost_model.json` and serves FastAPI on port 8000. Override `RISK_THRESHOLD` or `MODEL_ARTIFACT_PATH` with `fly secrets set` if needed.
+
+## Drift monitoring
+
+`make monitor` compares `data/monitoring_reference.csv` (reference) to `data/monitoring_current.csv` (current) on `amount`, `hour`, `merchant`, and `country`, then writes:
+
+- `docs/media/drift_report.html` — interactive Evidently report
+- `docs/media/drift_summary.json` — compact drift summary for CI or dashboards
 
 ## Full Training
 
@@ -75,7 +101,11 @@ The reproducible kernel source lives in `kaggle_kernel/`. It writes the committe
 
 ## Project Status
 
-Current state: FastAPI serves the committed IEEE-CIS XGBoost model artifact with Tree SHAP feature reasons, reusable domain summary framing, smoke tests, and deployment-ready structure.
+Current state: FastAPI serves the committed IEEE-CIS XGBoost model with Tree SHAP reasons, cost-aligned analyst summaries, Evidently drift reports, Fly.io deploy config, and smoke tests.
+
+## Agent tooling (Serena)
+
+Python LSP is enabled in `.serena/project.yml` (`languages: [python]`, Pyright via `.venv/bin/python`). After changing Serena config, restart the Serena MCP server in Cursor so symbol navigation works.
 
 ## V2 Roadmap
 

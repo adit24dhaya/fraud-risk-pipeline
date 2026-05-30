@@ -1,0 +1,15 @@
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.git/
+.gitignore
+mlruns/
+kaggle_output/
+graphify-out/
+.serena/cache/
+repomix-output.*
+docs/media/*.html
+*.md
+!artifacts/model_card.md

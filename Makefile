@@ -1,4 +1,5 @@
 PYTHON ?= .venv/bin/python
+RUFF ?= .venv/bin/ruff
 
 .PHONY: install test lint format serve ui train monitor
 
@@ -9,10 +10,10 @@ test:
 	$(PYTHON) -m pytest -q
 
 lint:
-	ruff check src tests ui
+	$(RUFF) check src tests ui
 
 format:
-	ruff format src tests ui
+	$(RUFF) format src tests ui
 
 serve:
 	uvicorn src.api.main:app --reload

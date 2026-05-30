@@ -1,0 +1,22 @@
+# Fly.io app config — create app once: fly apps create fraud-risk-pipeline
+app = "fraud-risk-pipeline"
+primary_region = "sjc"
+
+[build]
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
+
+[env]
+  MODEL_ARTIFACT_PATH = "artifacts/xgboost_model.json"
+  RISK_THRESHOLD = "0.722727"

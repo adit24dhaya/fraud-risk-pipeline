@@ -31,7 +31,8 @@ project_name: "fraud-risk-pipeline"
 # When using multiple languages, the first language server that supports a given file will be used for that file.
 # The first language is the default language and the respective language server will be used as a fallback.
 # Note that when using the JetBrains backend, language servers are not used and this list is correspondingly ignored.
-languages: []
+languages:
+  - python
 
 # the encoding used by text files in the project
 # For a list of possible encodings, see https://docs.python.org/3.11/library/codecs.html#standard-encodings
@@ -56,7 +57,10 @@ ignore_all_files_in_gitignore: true
 # Maps the language key to the options.
 # Have a look at the docstring of the constructors of the LS implementations within solidlsp (e.g., for C# or PHP) to see which options are available.
 # No documentation on options means no options are available.
-ls_specific_settings: {}
+# Pyright uses the project venv for imports (xgboost, fastapi, etc.).
+ls_specific_settings:
+  python:
+    ls_path: ".venv/bin/python"
 
 # list of additional workspace folder paths for cross-package reference support (e.g. in monorepos).
 # Paths can be absolute or relative to the project root.

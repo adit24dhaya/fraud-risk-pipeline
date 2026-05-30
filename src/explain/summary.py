@@ -5,11 +5,12 @@ def explain(
     prediction: float,
     shap_features: list[FeatureContribution],
     domain: DomainConfig,
+    threshold: float = 0.5,
 ) -> str:
     """Return a plain-English, auditable summary for a human reviewer."""
     decision_phrase = (
         domain.positive_decision_phrase
-        if prediction >= 0.5
+        if prediction >= threshold
         else domain.negative_decision_phrase
     )
     if not shap_features:

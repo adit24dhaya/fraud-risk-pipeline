@@ -26,6 +26,7 @@ def predict(payload: PredictRequest) -> PredictResponse:
         prediction=prediction.probability,
         shap_features=prediction.top_features,
         domain=FRAUD_DOMAIN,
+        threshold=prediction.threshold,
     )
     return PredictResponse(
         fraud_probability=prediction.probability,

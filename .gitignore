@@ -1,7 +1,9 @@
-# OS/editor noise
+# OS / editor
 .DS_Store
+.idea/
+.vscode/
 
-# Python/local environments
+# Python environments
 .env
 .env.*
 !.env.example
@@ -9,25 +11,53 @@
 venv/
 __pycache__/
 *.py[cod]
-.pytest_cache/
-.ruff_cache/
-
-# Build/test artifacts
+*.egg-info/
+.eggs/
 dist/
 build/
+
+# Test / lint / type-check caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
 coverage/
 
-# Agent/tool generated artifacts
+# Logs
+*.log
+
+# Notebooks (if added later)
+.ipynb_checkpoints/
+
+# Generated monitoring reports (`make monitor`)
+docs/media/*.html
+docs/media/drift_summary.json
+
+# Agent / graph / pack tooling (see AGENTS.md)
 .graphify_*
+.graphify_python
 graphify-out/
-kaggle_output/
 repomix-output.*
 .serena/cache/
 .serena/project.local.yml
 
-# Local experiment stores and heavyweight model binaries
+# Kaggle / local data downloads (keep committed samples)
+data/raw/
+data/ieee/
+kaggle_output/
+*.parquet
+
+# ML experiment tracking and heavyweight model binaries
 mlruns/
 artifacts/*.pkl
 artifacts/*.joblib
 artifacts/*.ubj
 artifacts/*.bin
+
+# Deploy CLI local state
+.fly/
+
+# Streamlit secrets (if used)
+.streamlit/secrets.toml
