@@ -19,14 +19,10 @@ def explain(
         )
 
     increasing = [
-        item.feature
-        for item in shap_features
-        if item.direction == "increases_risk"
+        item.feature for item in shap_features if item.direction == "increases_risk"
     ]
     decreasing = [
-        item.feature
-        for item in shap_features
-        if item.direction == "decreases_risk"
+        item.feature for item in shap_features if item.direction == "decreases_risk"
     ]
 
     parts = [
@@ -34,13 +30,10 @@ def explain(
     ]
     if increasing:
         parts.append(
-            f"Main {domain.signal_label} increasing risk: "
-            f"{', '.join(increasing[:3])}."
+            f"Main {domain.signal_label} increasing risk: {', '.join(increasing[:3])}."
         )
     if decreasing:
-        parts.append(
-            f"Offsetting signals: {', '.join(decreasing[:2])}."
-        )
+        parts.append(f"Offsetting signals: {', '.join(decreasing[:2])}.")
     if domain.guardrails:
         parts.append(domain.guardrails[-1])
     return " ".join(parts)

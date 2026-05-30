@@ -29,6 +29,6 @@ def test_predict_contract() -> None:
     payload = response.json()
     assert 0.0 <= payload["fraud_probability"] <= 1.0
     assert payload["decision"] in {"approve", "flag_for_review"}
-    assert payload["threshold"] == 0.42
+    assert payload["threshold"] == 0.722727
     assert payload["top_features"]
     assert payload["analyst_summary"]

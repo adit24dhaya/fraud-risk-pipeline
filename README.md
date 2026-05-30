@@ -8,9 +8,9 @@ A deployed real-time transaction-risk system: imbalanced-data fraud model with c
 
 This is a production-style fraud/risk service, not a notebook. A user sends a transaction to the API or demo UI and receives:
 
-- fraud probability
+- fraud probability from the committed XGBoost model artifact
 - decision at a documented threshold
-- top feature contributions
+- top feature contributions using XGBoost Tree SHAP values
 - plain-English analyst summary
 
 The fast scoring path is intentionally separate from the LLM layer:
@@ -24,7 +24,7 @@ The LLM summary is on-demand for human analyst review. It must never block the r
 ```bash
 curl -X POST http://localhost:8000/predict \
   -H "Content-Type: application/json" \
-  -d '{"transaction":{"amount":250,"merchant":"new_merchant","card_id":"card_001","country":"US","hour":23}}'
+  -d '{"transaction":{"TransactionAmt":250,"TransactionDT":7500000,"ProductCD":"W","card1":12345}}'
 ```
 
 Response shape:
@@ -33,15 +33,15 @@ Response shape:
 {
   "fraud_probability": 0.83,
   "decision": "flag_for_review",
-  "threshold": 0.42,
+  "threshold": 0.722727,
   "top_features": [
     {
-      "feature": "amount_log",
+      "feature": "TransactionAmt",
       "shap_value": 0.31,
       "direction": "increases_risk"
     }
   ],
-  "analyst_summary": "Flagged for review: elevated risk signals include amount_log and night_transaction."
+  "analyst_summary": "Flagged for review: elevated risk signals include TransactionAmt and transaction_hour."
 }
 ```
 
@@ -75,7 +75,7 @@ The reproducible kernel source lives in `kaggle_kernel/`. It writes the committe
 
 ## Project Status
 
-Current state: v1 scaffold with FastAPI, reusable explainer contract, deterministic feature/model stubs, smoke tests, and deployment-ready structure. Next block is data loading plus a baseline LightGBM/XGBoost training run logged to MLflow.
+Current state: FastAPI serves the committed IEEE-CIS XGBoost model artifact with Tree SHAP feature reasons, reusable domain summary framing, smoke tests, and deployment-ready structure.
 
 ## V2 Roadmap
 

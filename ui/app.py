@@ -7,16 +7,23 @@ st.title("Fraud Risk Pipeline")
 
 api_url = st.sidebar.text_input("API URL", "http://localhost:8000")
 amount = st.number_input("Amount", min_value=0.0, value=250.0, step=10.0)
-merchant = st.text_input("Merchant", "new_electronics")
-country = st.text_input("Country", "US")
+transaction_dt = st.number_input(
+    "Transaction time offset",
+    min_value=0,
+    value=7_500_000,
+    step=3_600,
+)
+product_cd = st.selectbox("Product code", ["W", "C", "R", "H", "S"])
+card1 = st.number_input("Card1", min_value=0, value=12_345, step=1)
 hour = st.slider("Hour", 0, 23, 23)
 
 if st.button("Score transaction", type="primary"):
     payload = {
         "transaction": {
-            "amount": amount,
-            "merchant": merchant,
-            "country": country,
+            "TransactionAmt": amount,
+            "TransactionDT": transaction_dt,
+            "ProductCD": product_cd,
+            "card1": card1,
             "hour": hour,
         }
     }

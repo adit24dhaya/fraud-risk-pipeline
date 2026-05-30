@@ -24,8 +24,12 @@ def choose_cost_based_threshold(
     best: ThresholdResult | None = None
     for threshold in candidates:
         predicted = [int(prob >= threshold) for prob in probabilities]
-        false_positives = sum(1 for y, pred in zip(y_true, predicted) if y == 0 and pred == 1)
-        false_negatives = sum(1 for y, pred in zip(y_true, predicted) if y == 1 and pred == 0)
+        false_positives = sum(
+            1 for y, pred in zip(y_true, predicted) if y == 0 and pred == 1
+        )
+        false_negatives = sum(
+            1 for y, pred in zip(y_true, predicted) if y == 1 and pred == 0
+        )
         expected_cost = (
             false_positives * false_positive_cost
             + false_negatives * false_negative_cost
