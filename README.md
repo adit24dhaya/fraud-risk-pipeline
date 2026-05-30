@@ -49,9 +49,11 @@ Response shape:
 
 | Model | Split | PR-AUC | Precision | Recall | Threshold |
 | --- | --- | ---: | ---: | ---: | ---: |
-| Baseline heuristic scaffold | time-based placeholder | TBD | TBD | TBD | 0.42 |
+| XGBoost scaffold baseline | time-based sample split | 1.000 | 1.000 | 1.000 | 0.210 |
 
 Accuracy is intentionally not used as the headline metric because fraud data is highly imbalanced.
+
+Current metrics are from the tiny committed sample dataset so the repo can run end-to-end. They prove the pipeline works; they are not final model-quality claims.
 
 ## Local Development
 

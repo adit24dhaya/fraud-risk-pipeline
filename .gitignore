@@ -23,3 +23,10 @@ graphify-out/
 repomix-output.*
 .serena/cache/
 .serena/project.local.yml
+
+# Local experiment stores and heavyweight model binaries
+mlruns/
+artifacts/*.pkl
+artifacts/*.joblib
+artifacts/*.ubj
+artifacts/*.bin
