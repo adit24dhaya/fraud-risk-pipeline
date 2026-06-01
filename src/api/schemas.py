@@ -19,3 +19,20 @@ class PredictResponse(BaseModel):
     threshold: float
     top_features: list[FeatureReason]
     analyst_summary: str
+
+
+class ExplainLlmRequest(BaseModel):
+    transaction: dict[str, Any] = Field(
+        ...,
+        description="Raw transaction payload (same shape as /predict)",
+    )
+
+
+class ExplainLlmResponse(BaseModel):
+    fraud_probability: float
+    decision: Literal["approve", "flag_for_review"]
+    threshold: float
+    top_features: list[FeatureReason]
+    template_summary: str
+    llm_summary: str
+    model_id: str

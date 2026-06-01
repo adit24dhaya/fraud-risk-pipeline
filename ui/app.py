@@ -1,11 +1,15 @@
+import os
+
 import requests
 import streamlit as st
 
 
+DEFAULT_API_URL = os.getenv("FRAUD_API_URL", "http://localhost:8000")
+
 st.set_page_config(page_title="Fraud Risk Pipeline", layout="wide")
 st.title("Fraud Risk Pipeline")
 
-api_url = st.sidebar.text_input("API URL", "http://localhost:8000")
+api_url = st.sidebar.text_input("API URL", DEFAULT_API_URL)
 amount = st.number_input("Amount", min_value=0.0, value=250.0, step=10.0)
 transaction_dt = st.number_input(
     "Transaction time offset",
@@ -27,10 +31,14 @@ if st.button("Score transaction", type="primary"):
             "hour": hour,
         }
     }
-    response = requests.post(f"{api_url}/predict", json=payload, timeout=15)
-    response.raise_for_status()
-    result = response.json()
-    st.metric("Fraud probability", f"{result['fraud_probability']:.1%}")
-    st.write(result["decision"])
-    st.write(result["analyst_summary"])
-    st.dataframe(result["top_features"], use_container_width=True)
+    try:
+        response = requests.post(f"{api_url}/predict", json=payload, timeout=15)
+        response.raise_for_status()
+    except requests.RequestException as exc:
+        st.error(f"Prediction request failed: {exc}")
+    else:
+        result = response.json()
+        st.metric("Fraud probability", f"{result['fraud_probability']:.1%}")
+        st.write(result["decision"])
+        st.write(result["analyst_summary"])
+        st.dataframe(result["top_features"], use_container_width=True)
