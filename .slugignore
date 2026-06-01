@@ -1,0 +1,12 @@
+.venv/
+mlruns/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.git/
+kaggle_kernel/
+data/raw/
+data/ieee/
+docs/media/*.html
+tests/
+ui/
