@@ -1,6 +1,7 @@
 # Real-Time Transaction Risk & Fraud Detection Pipeline
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-coming%20soon-lightgrey)](#)
+[![Live UI](https://img.shields.io/badge/Live%20UI-Heroku-430098)](https://adit-txn-risk-pipeline-ui.herokuapp.com/)
+[![Live API](https://img.shields.io/badge/Live%20API-Heroku-6762A6)](https://adit-txn-risk-pipeline-41ee5a80b27b.herokuapp.com/docs)
 
 A real-time transaction-risk system: imbalanced-data fraud model with cost-based thresholding, Tree SHAP explainability, Evidently drift monitoring, and a reusable template-based analyst summary (same framing as a healthcare risk console; optional LLM on-demand in V2).
 
@@ -49,7 +50,7 @@ The analyst summary is template-based from SHAP drivers and uses the same cost-b
 | Analyst summary | Deterministic template summary on `/predict`; optional Hugging Face LLM summary only on `/explain/llm` |
 | UI | Streamlit client with editable transaction amount, time offset, product code, card id, hour, and API URL |
 | Monitoring | Evidently drift report comparing committed reference/current slices |
-| Deploy | Dockerfile and Fly.io config are present; live deploy is still pending |
+| Deploy | API + Streamlit UI on Heroku; Fly.io config available as an alternative |
 
 ## API
 
@@ -131,6 +132,37 @@ If the API is running on another local port:
 ```bash
 FRAUD_API_URL=http://127.0.0.1:8001 make ui
 ```
+
+Point the UI at the hosted API:
+
+```bash
+FRAUD_API_URL=https://adit-txn-risk-pipeline-41ee5a80b27b.herokuapp.com make ui
+```
+
+## Deploy (Heroku)
+
+Two apps from this repo: **API** (root `Procfile`) and **Streamlit UI** (`ui/` via subdirectory buildpack).
+
+| App | URL |
+| --- | --- |
+| API | https://adit-txn-risk-pipeline-41ee5a80b27b.herokuapp.com/docs |
+| UI | https://adit-txn-risk-pipeline-ui.herokuapp.com/ |
+
+```bash
+# API (once)
+git push heroku main
+
+# UI (once: create app, buildpacks, config)
+heroku create adit-txn-risk-pipeline-ui
+heroku buildpacks:add -a adit-txn-risk-pipeline-ui https://github.com/timanovsky/subdir-heroku-buildpack
+heroku buildpacks:add -a adit-txn-risk-pipeline-ui heroku/python
+heroku config:set PROJECT_PATH=ui \
+  FRAUD_API_URL=https://adit-txn-risk-pipeline-41ee5a80b27b.herokuapp.com \
+  -a adit-txn-risk-pipeline-ui
+git push heroku-ui main
+```
+
+Set `HF_API_TOKEN` on the **API** app only if you use `POST /explain/llm`.
 
 ## Deploy (Fly.io)
 
