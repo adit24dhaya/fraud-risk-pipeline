@@ -1,0 +1,26 @@
+{
+  "name": "Fraud Risk API",
+  "description": "FastAPI transaction fraud scoring with XGBoost and Tree SHAP explainability.",
+  "repository": "https://github.com/adit24dhaya/fraud-risk-pipeline",
+  "keywords": ["fastapi", "fraud-detection", "xgboost", "machine-learning"],
+  "stack": "heroku-24",
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "eco"
+    }
+  },
+  "env": {
+    "MODEL_ARTIFACT_PATH": {
+      "value": "artifacts/xgboost_model.json"
+    },
+    "RISK_THRESHOLD": {
+      "value": "0.722727"
+    }
+  }
+}

@@ -4,7 +4,7 @@ RUFF ?= .venv/bin/ruff
 .PHONY: install test lint format serve ui train monitor
 
 install:
-	$(PYTHON) -m pip install -r requirements.txt
+	$(PYTHON) -m pip install -r requirements.txt -r requirements-dev.txt
 
 test:
 	$(PYTHON) -m pytest -q
