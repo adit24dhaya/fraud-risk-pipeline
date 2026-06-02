@@ -2,6 +2,7 @@
 
 [![Live UI](https://img.shields.io/badge/Live%20UI-Heroku-430098)](https://adit-txn-risk-pipeline-ui-e2c4483417ee.herokuapp.com/)
 [![Live API](https://img.shields.io/badge/Live%20API-Heroku-6762A6)](https://adit-txn-risk-pipeline-41ee5a80b27b.herokuapp.com/docs)
+[![CI](https://github.com/adit24dhaya/fraud-risk-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/adit24dhaya/fraud-risk-pipeline/actions/workflows/ci.yml)
 
 A real-time transaction-risk system: imbalanced-data fraud model with cost-based thresholding, Tree SHAP explainability, Evidently drift monitoring, and a reusable template-based analyst summary (same framing as a healthcare risk console; optional LLM on-demand in V2).
 
@@ -50,9 +51,12 @@ The analyst summary is template-based from SHAP drivers and uses the same cost-b
 | Analyst summary | Deterministic template summary on `/predict`; optional Hugging Face LLM summary only on `/explain/llm` |
 | UI | Streamlit client with editable transaction amount, time offset, product code, card id, hour, and API URL |
 | Monitoring | Evidently drift report comparing committed reference/current slices |
+| Access control | Optional `X-API-Key` protection when `API_KEY` is configured |
 | Deploy | API + Streamlit UI on Heroku; Fly.io config available as an alternative |
 
 ## API
+
+`GET /health` is public. `POST /predict` and `POST /explain/llm` are public by default for demo use, but require `X-API-Key` when `API_KEY` is set in the environment.
 
 ```bash
 curl -X POST http://localhost:8000/predict \
@@ -87,6 +91,18 @@ These values were produced by the committed model artifact through the local API
 | Low amount, early hour | 24.50 | 1 | W | 1000 | 0.335307 | `approve` | C14 |
 | Demo default values | 250.00 | 23 | W | 12345 | 0.728981 | `flag_for_review` | C14, TransactionAmt, D2, card6 |
 | High amount, product C | 1250.00 | 3 | C | 17000 | 0.759150 | `flag_for_review` | TransactionAmt, C14, card6 |
+
+## Inference Contract
+
+The live API accepts sparse JSON transaction payloads for demo scoring. The clearest supported fields are:
+
+- `TransactionAmt` or `amount`
+- `TransactionDT`
+- `ProductCD`
+- `card1`
+- `hour`
+
+At serving time, `src/features/ieee.py` aligns the request to the committed IEEE-CIS feature list. Missing model features are zero-filled, so the demo is useful for API, thresholding, SHAP, and UI review flows, but it is not a full production feature pipeline. A production deployment should send the richer IEEE-CIS-style field set or replace the sparse alignment layer with the same feature engineering used in training.
 
 ## Metrics
 
@@ -164,6 +180,8 @@ make deploy-ui   # after remote exists; updates FRAUD_API_URL and redeploys
 
 Set `HF_API_TOKEN` on the **API** app only if you use `POST /explain/llm`.
 
+Set `API_KEY` on the **API** app if you want `POST /predict` and `POST /explain/llm` to require an `X-API-Key` header. Leave it unset for an open portfolio demo.
+
 ## Deploy (Fly.io)
 
 Requires [Fly CLI](https://fly.io/docs/hands-on/install-flyctl/) and a Fly account.
@@ -195,12 +213,12 @@ The reproducible kernel source lives in `kaggle_kernel/`. It writes the committe
 
 Current state: FastAPI serves the committed IEEE-CIS XGBoost model with Tree SHAP reasons, cost-aligned analyst summaries, Streamlit scoring UI, optional on-demand HF LLM summaries, Evidently drift reports, Fly.io deploy config, and smoke tests.
 
-Local status checked on June 1, 2026:
+Local status checked on June 2, 2026:
 
-- `make test` passes: 14 tests.
+- `make test` passes.
 - `make lint` passes.
-- Graphify code graph refreshed: 300 nodes, 389 edges, 34 communities.
-- Branch `main` is one commit ahead of `origin/main`; Fly.io deploy and live README badge are still pending.
+- GitHub Actions CI runs lint and tests on `main` pushes and pull requests.
+- API and Streamlit UI are deployed on Heroku; Fly.io config remains available as an alternative deploy path.
 
 ## Agent tooling (Serena)
 

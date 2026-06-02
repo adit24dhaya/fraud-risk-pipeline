@@ -1,5 +1,9 @@
+import os
+import secrets
+from typing import Annotated
+
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException
 
 from src.api.schemas import (
     ExplainLlmRequest,
@@ -29,12 +33,25 @@ app = FastAPI(
 model = RiskModel.load_default()
 
 
+def require_api_key(
+    x_api_key: Annotated[str | None, Header(alias="X-API-Key")] = None,
+) -> None:
+    expected_key = os.getenv("API_KEY", "").strip()
+    if not expected_key:
+        return
+    if not x_api_key or not secrets.compare_digest(x_api_key, expected_key):
+        raise HTTPException(status_code=401, detail="Invalid or missing API key")
+
+
+REQUIRE_API_KEY = Depends(require_api_key)
+
+
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-@app.post("/predict", response_model=PredictResponse)
+@app.post("/predict", response_model=PredictResponse, dependencies=[REQUIRE_API_KEY])
 def predict(payload: PredictRequest) -> PredictResponse:
     prediction = model.predict(payload.transaction)
     summary = explain(
@@ -59,7 +76,7 @@ def predict(payload: PredictRequest) -> PredictResponse:
     )
 
 
-@app.post("/explain/llm", response_model=ExplainLlmResponse)
+@app.post("/explain/llm", response_model=ExplainLlmResponse, dependencies=[REQUIRE_API_KEY])
 def explain_llm(payload: ExplainLlmRequest) -> ExplainLlmResponse:
     """On-demand LLM analyst summary via Hugging Face serverless inference."""
     prediction = model.predict(payload.transaction)
