@@ -278,7 +278,8 @@ with left_col:
         score_clicked = st.button("Run risk score", type="primary", use_container_width=True)
 
 with right_col:
-    if score_clicked:
+    should_score = score_clicked or "result" not in st.session_state
+    if should_score:
         with st.spinner("Scoring…"):
             result, error = score_transaction(api_url, payload)
         st.session_state.result = result

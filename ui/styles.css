@@ -29,8 +29,8 @@ header[data-testid="stHeader"] {
 }
 
 .block-container {
-    padding: 1.25rem 2rem 2.5rem;
-    max-width: 1180px;
+    padding: 1rem 1.5rem 2rem;
+    max-width: 1080px;
 }
 
 /* —— Sidebar —— */
@@ -80,14 +80,15 @@ header[data-testid="stHeader"] {
     letter-spacing: 0.02em;
 }
 
-/* Slider: blue track, no red value */
+/* Slider: keep Streamlit's native structure; only tune labels/thumb color. */
 [data-testid="stSlider"] [data-testid="stThumbValue"] {
     color: var(--blue) !important;
     font-weight: 700;
 }
 
-[data-testid="stSlider"] [data-baseweb="slider"] div {
-    background: var(--blue) !important;
+[data-testid="stSlider"] [data-baseweb="slider"] {
+    margin-top: 0.35rem;
+    margin-bottom: 0.2rem;
 }
 
 /* Radio scenario pills */
@@ -133,7 +134,7 @@ header[data-testid="stHeader"] {
     border: 1px solid var(--border) !important;
     border-radius: 12px !important;
     box-shadow: var(--shadow) !important;
-    padding: 1.25rem 1.35rem 1rem !important;
+    padding: 1rem 1.15rem 0.9rem !important;
 }
 
 [data-testid="stVerticalBlockBorderWrapper"] > div {
@@ -196,8 +197,8 @@ header[data-testid="stHeader"] {
 
 /* —— Custom HTML blocks —— */
 .workbench-header {
-    margin-bottom: 1.5rem;
-    padding-bottom: 1.25rem;
+    margin-bottom: 1.15rem;
+    padding-bottom: 1rem;
     border-bottom: 1px solid var(--border);
 }
 
@@ -220,10 +221,10 @@ header[data-testid="stHeader"] {
 
 .workbench-subtitle {
     color: var(--muted);
-    font-size: 0.92rem;
+    font-size: 0.9rem;
     line-height: 1.5;
     margin: 0.5rem 0 0;
-    max-width: 36rem;
+    max-width: 34rem;
 }
 
 .section-label {
@@ -291,15 +292,15 @@ header[data-testid="stHeader"] {
 .status-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 0.65rem;
-    margin-bottom: 1rem;
+    gap: 0.55rem;
+    margin-bottom: 0.75rem;
 }
 
 .status-tile {
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: 10px;
-    padding: 0.75rem 0.9rem;
+    padding: 0.65rem 0.75rem;
     box-shadow: var(--shadow);
 }
 
@@ -323,7 +324,7 @@ header[data-testid="stHeader"] {
     border: 1px solid var(--border);
     border-radius: 12px;
     box-shadow: var(--shadow);
-    padding: 1.35rem 1.5rem 1.25rem;
+    padding: 1.1rem 1.2rem 1rem;
 }
 
 .result-hero {
@@ -355,7 +356,7 @@ header[data-testid="stHeader"] {
 }
 
 .score-number {
-    font-size: 3.25rem;
+    font-size: 2.85rem;
     font-weight: 750;
     line-height: 1;
     color: var(--text);
@@ -381,7 +382,7 @@ header[data-testid="stHeader"] {
     height: 10px;
     border-radius: 999px;
     background: #e2e8f0;
-    margin: 1rem 0 1.75rem;
+    margin: 0.85rem 0 1.6rem;
 }
 
 .score-fill {
@@ -417,11 +418,11 @@ header[data-testid="stHeader"] {
     background: #f8fafc;
     border: 1px solid var(--border);
     border-radius: 10px;
-    padding: 1rem 1.1rem;
-    font-size: 0.9rem;
+    padding: 0.85rem 0.95rem;
+    font-size: 0.88rem;
     line-height: 1.55;
     color: #334155;
-    margin-bottom: 1rem;
+    margin-bottom: 0.85rem;
 }
 
 .drivers-heading {
