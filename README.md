@@ -1,6 +1,6 @@
 # Real-Time Transaction Risk & Fraud Detection Pipeline
 
-[![Live UI](https://img.shields.io/badge/Live%20UI-Heroku-430098)](https://adit-txn-risk-pipeline-ui.herokuapp.com/)
+[![Live UI](https://img.shields.io/badge/Live%20UI-Heroku-430098)](https://adit-txn-risk-pipeline-ui-e2c4483417ee.herokuapp.com/)
 [![Live API](https://img.shields.io/badge/Live%20API-Heroku-6762A6)](https://adit-txn-risk-pipeline-41ee5a80b27b.herokuapp.com/docs)
 
 A real-time transaction-risk system: imbalanced-data fraud model with cost-based thresholding, Tree SHAP explainability, Evidently drift monitoring, and a reusable template-based analyst summary (same framing as a healthcare risk console; optional LLM on-demand in V2).
@@ -146,20 +146,20 @@ Two apps from this repo: **API** (root `Procfile`) and **Streamlit UI** (`ui/` v
 | App | URL |
 | --- | --- |
 | API | https://adit-txn-risk-pipeline-41ee5a80b27b.herokuapp.com/docs |
-| UI | https://adit-txn-risk-pipeline-ui.herokuapp.com/ |
+| UI | https://adit-txn-risk-pipeline-ui-e2c4483417ee.herokuapp.com/ |
 
 ```bash
 # API (once)
 git push heroku main
 
-# UI (once: create app, buildpacks, config)
+# UI (deploy ui/ as app root via git subtree)
 heroku create adit-txn-risk-pipeline-ui
-heroku buildpacks:add -a adit-txn-risk-pipeline-ui https://github.com/timanovsky/subdir-heroku-buildpack
-heroku buildpacks:add -a adit-txn-risk-pipeline-ui heroku/python
-heroku config:set PROJECT_PATH=ui \
-  FRAUD_API_URL=https://adit-txn-risk-pipeline-41ee5a80b27b.herokuapp.com \
+heroku buildpacks:add heroku/python -a adit-txn-risk-pipeline-ui
+heroku config:set FRAUD_API_URL=https://adit-txn-risk-pipeline-41ee5a80b27b.herokuapp.com \
   -a adit-txn-risk-pipeline-ui
-git push heroku-ui main
+git subtree split --prefix ui -b heroku-ui-deploy
+git push heroku-ui heroku-ui-deploy:main --force
+make deploy-ui   # after remote exists; updates FRAUD_API_URL and redeploys
 ```
 
 Set `HF_API_TOKEN` on the **API** app only if you use `POST /explain/llm`.

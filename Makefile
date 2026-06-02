@@ -26,7 +26,8 @@ ui:
 
 deploy-ui:
 	heroku config:set FRAUD_API_URL=$(HEROKU_API_URL) -a $(HEROKU_UI_APP)
-	git push heroku-ui main
+	git subtree split --prefix ui -b heroku-ui-deploy
+	git push heroku-ui heroku-ui-deploy:main --force
 
 train:
 	$(PYTHON) -m src.train.train
