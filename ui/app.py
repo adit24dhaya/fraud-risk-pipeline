@@ -270,11 +270,12 @@ def render_result(
             st.json(result)
 
 
-def run_score(api_url: str, payload: dict[str, dict[str, Any]]) -> None:
+def run_score(api_url: str, payload: dict[str, dict[str, Any]], scenario: str) -> None:
     result, error = score_transaction(api_url, payload)
     st.session_state.result = result
     st.session_state.error = error
     st.session_state.payload = payload
+    st.session_state.scored_scenario = scenario
     st.session_state.scored = True
 
 
@@ -350,24 +351,20 @@ with left_col:
         score_clicked = st.button("Score transaction", type="primary", use_container_width=True)
 
 with right_col:
-    if score_clicked:
-        with st.spinner("Running model inference…"):
-            run_score(api_url, payload)
-    elif not st.session_state.get("scored") and api_online:
-        # First visit: auto-demo the edge case so recruiters see value immediately
-        demo_payload = {
-            "transaction": {
-                k: v
-                for k, v in SCENARIOS["Review edge"].items()
-                if k != "blurb"
-            }
-        }
-        run_score(api_url, demo_payload)
+    scored_scenario = st.session_state.get("scored_scenario")
+    scenario_needs_score = scored_scenario != selected_scenario
 
-    active_result = st.session_state.get("result")
-    active_error = st.session_state.get("error")
-    active_payload = st.session_state.get("payload", payload)
-    has_scored = st.session_state.get("scored", False)
+    if score_clicked or (api_online and scenario_needs_score):
+        with st.spinner("Running model inference…"):
+            run_score(api_url, payload, selected_scenario)
+
+    has_scored = (
+        st.session_state.get("scored", False)
+        and st.session_state.get("scored_scenario") == selected_scenario
+    )
+    active_result = st.session_state.get("result") if has_scored else None
+    active_error = st.session_state.get("error") if has_scored else None
+    active_payload = st.session_state.get("payload", payload) if has_scored else payload
 
     chips = [
         ("Scenario", selected_scenario),
