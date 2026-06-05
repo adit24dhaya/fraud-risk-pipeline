@@ -4,7 +4,7 @@ RUFF ?= .venv/bin/ruff
 HEROKU_API_URL ?= https://adit-txn-risk-pipeline-41ee5a80b27b.herokuapp.com
 HEROKU_UI_APP ?= adit-txn-risk-pipeline-ui
 
-.PHONY: install test lint format serve ui train monitor deploy-ui
+.PHONY: install test lint format serve ui train monitor deploy-ui screenshots
 
 install:
 	$(PYTHON) -m pip install -r requirements.txt -r requirements-dev.txt
@@ -34,3 +34,6 @@ train:
 
 monitor:
 	$(PYTHON) -m src.monitor.generate_drift_report
+
+screenshots:
+	$(PYTHON) scripts/capture_readme_screenshots.py

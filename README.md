@@ -55,15 +55,15 @@ Each response includes:
 
 ## Demo screenshots
 
-Repo screenshots (local captures; the [live UI](https://adit-txn-risk-pipeline-ui-e2c4483417ee.herokuapp.com/) has the latest portfolio layout):
+Captured from the live Heroku demo (regenerate with `python scripts/capture_readme_screenshots.py`):
 
-![Prediction examples with different transaction values](docs/media/prediction-examples.png)
+![Streamlit portfolio workbench — Review edge scenario](docs/media/streamlit-ui.png)
 
-![Streamlit fraud risk UI](docs/media/streamlit-ui.png)
+![Flag-for-review decision at 72.9% vs 72.3% threshold](docs/media/prediction-examples.png)
 
-![FastAPI docs screenshot](docs/media/api-docs.png)
+![FastAPI OpenAPI docs](docs/media/api-docs.png)
 
-![Evidently drift report screenshot](docs/media/drift-report.png)
+![Evidently drift report](docs/media/drift-report.png)
 
 ## API
 
