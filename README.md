@@ -4,105 +4,108 @@
 [![Live API](https://img.shields.io/badge/Live%20API-Heroku-6762A6)](https://adit-txn-risk-pipeline-41ee5a80b27b.herokuapp.com/docs)
 [![CI](https://github.com/adit24dhaya/fraud-risk-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/adit24dhaya/fraud-risk-pipeline/actions/workflows/ci.yml)
 
-A real-time transaction-risk system: imbalanced-data fraud model with cost-based thresholding, Tree SHAP explainability, Evidently drift monitoring, and a reusable template-based analyst summary (same framing as a healthcare risk console; optional LLM on-demand in V2).
+Production-style fraud scoring on the [IEEE-CIS Fraud Detection](https://www.kaggle.com/c/ieee-fraud-detection) dataset: XGBoost inference, cost-based thresholding, Tree SHAP explainability, Evidently drift monitoring, and a portfolio Streamlit workbench backed by a FastAPI service.
 
-## Demo Screenshots
+## Live demo
 
-Prediction examples from the local `/predict` API:
+| Surface | URL |
+| --- | --- |
+| **Streamlit workbench** | https://adit-txn-risk-pipeline-ui-e2c4483417ee.herokuapp.com/ |
+| **FastAPI docs (Swagger)** | https://adit-txn-risk-pipeline-41ee5a80b27b.herokuapp.com/docs |
+| **Health check** | https://adit-txn-risk-pipeline-41ee5a80b27b.herokuapp.com/health |
 
-![Prediction examples with different transaction values](docs/media/prediction-examples.png)
+Try a live prediction:
 
-Streamlit scoring form:
+```bash
+curl -X POST https://adit-txn-risk-pipeline-41ee5a80b27b.herokuapp.com/predict \
+  -H "Content-Type: application/json" \
+  -d '{"transaction":{"TransactionAmt":250,"TransactionDT":7500000,"ProductCD":"W","card1":12345,"hour":23}}'
+```
 
-![Streamlit fraud risk UI](docs/media/streamlit-ui.png)
+The UI auto-runs the **Review edge** scenario on first load, then lets you switch presets and re-score. JSON request/response details are tucked under **Technical details**.
 
-FastAPI contract:
+## What this shows
 
-![FastAPI docs screenshot](docs/media/api-docs.png)
+This is an end-to-end ML service, not a notebook. A transaction flows through:
 
-Evidently drift report:
+`sparse JSON → IEEE feature alignment → XGBoost → cost-based decision → Tree SHAP → analyst summary`
 
-![Evidently drift report screenshot](docs/media/drift-report.png)
+Each response includes:
 
-## What This Shows
+- fraud probability from the committed model artifact
+- `approve` or `flag_for_review` at threshold `0.722727`
+- top Tree SHAP drivers with risk direction
+- plain-English analyst summary (template on `/predict`; optional LLM on `/explain/llm`)
 
-This is a production-style fraud/risk service, not a notebook. A user sends a transaction to the API or demo UI and receives:
-
-- fraud probability from the committed XGBoost model artifact
-- decision at a documented threshold
-- top feature contributions using XGBoost Tree SHAP values
-- plain-English analyst summary
-
-Scoring path:
-
-`transaction -> feature alignment -> XGBoost -> probability + threshold decision -> Tree SHAP -> analyst summary`
-
-The analyst summary is template-based from SHAP drivers and uses the same cost-based threshold as the API decision (not a fixed 0.5 cutoff).
-
-## Feature Surface
+## Feature surface
 
 | Area | What is implemented |
 | --- | --- |
-| Real-time API | `GET /health`, `POST /predict`, and optional `POST /explain/llm` |
-| Model serving | Committed IEEE-CIS XGBoost artifact loaded from `artifacts/xgboost_model.json` |
+| Real-time API | `GET /health`, `POST /predict`, optional `POST /explain/llm` |
+| Model serving | Committed IEEE-CIS XGBoost artifact (`artifacts/xgboost_model.json`) |
 | Thresholding | Cost-based threshold from `artifacts/threshold.json` (`0.722727`) |
-| Feature alignment | Sparse request payloads are aligned to the trained IEEE feature list, with zero-fill fallback for missing fields |
-| Explanations | Tree SHAP top feature contributions with risk direction labels |
-| Analyst summary | Deterministic template summary on `/predict`; optional Hugging Face LLM summary only on `/explain/llm` |
-| UI | Streamlit client with editable transaction amount, time offset, product code, card id, hour, and API URL |
-| Monitoring | Evidently drift report comparing committed reference/current slices |
-| Access control | Optional `X-API-Key` protection when `API_KEY` is configured |
-| Deploy | API + Streamlit UI on Heroku; Fly.io config available as an alternative |
+| Feature alignment | Sparse payloads aligned to 175 IEEE features with zero-fill fallback |
+| Explanations | Tree SHAP top features with `increases_risk` / `decreases_risk` labels |
+| Analyst summary | Deterministic template on `/predict`; HF LLM summary on `/explain/llm` |
+| UI | Streamlit portfolio demo — scenario presets, decision card, SHAP driver cards |
+| Monitoring | Evidently drift report (`make monitor`) on committed monitoring CSVs |
+| Access control | Optional `X-API-Key` when `API_KEY` is set (open by default for demo) |
+| Deploy | **Heroku** — separate API + UI apps; **Fly.io** scaffold as alternative |
+| CI | GitHub Actions — `ruff` + `pytest` on `main` |
+
+## Demo screenshots
+
+Repo screenshots (local captures; the [live UI](https://adit-txn-risk-pipeline-ui-e2c4483417ee.herokuapp.com/) has the latest portfolio layout):
+
+![Prediction examples with different transaction values](docs/media/prediction-examples.png)
+
+![Streamlit fraud risk UI](docs/media/streamlit-ui.png)
+
+![FastAPI docs screenshot](docs/media/api-docs.png)
+
+![Evidently drift report screenshot](docs/media/drift-report.png)
 
 ## API
 
-`GET /health` is public. `POST /predict` and `POST /explain/llm` are public by default for demo use, but require `X-API-Key` when `API_KEY` is set in the environment.
+`GET /health` is always public. `POST /predict` and `POST /explain/llm` are public when `API_KEY` is unset; set `API_KEY` in the environment to require `X-API-Key`.
 
-```bash
-curl -X POST http://localhost:8000/predict \
-  -H "Content-Type: application/json" \
-  -d '{"transaction":{"TransactionAmt":250,"TransactionDT":7500000,"ProductCD":"W","card1":12345}}'
-```
-
-Response shape:
+**Response shape:**
 
 ```json
 {
-  "fraud_probability": 0.83,
+  "fraud_probability": 0.728981,
   "decision": "flag_for_review",
   "threshold": 0.722727,
   "top_features": [
     {
-      "feature": "TransactionAmt",
-      "shap_value": 0.31,
+      "feature": "C14",
+      "shap_value": 0.548235,
       "direction": "increases_risk"
     }
   ],
-  "analyst_summary": "Flagged for review: elevated risk signals include TransactionAmt and transaction_hour."
+  "analyst_summary": "Flagged for review: model score is 73%. Main risk signals..."
 }
 ```
 
-### Local prediction examples
+### Example scenarios (committed model)
 
-These values were produced by the committed model artifact through the local API.
-
-| Scenario | `TransactionAmt` | `hour` | `ProductCD` | `card1` | Fraud probability | Decision | Top increasing drivers |
+| Scenario | Amount | Hour | Product | card1 | Fraud prob. | Decision | Top risk drivers |
 | --- | ---: | ---: | --- | ---: | ---: | --- | --- |
-| Low amount, early hour | 24.50 | 1 | W | 1000 | 0.335307 | `approve` | C14 |
-| Demo default values | 250.00 | 23 | W | 12345 | 0.728981 | `flag_for_review` | C14, TransactionAmt, D2, card6 |
-| High amount, product C | 1250.00 | 3 | C | 17000 | 0.759150 | `flag_for_review` | TransactionAmt, C14, card6 |
+| Low friction | 24.50 | 1 | W | 1000 | 0.335 | `approve` | C14 |
+| Review edge | 250.00 | 23 | W | 12345 | 0.729 | `flag_for_review` | C14, TransactionAmt, D2 |
+| High value | 1250.00 | 3 | C | 17000 | 0.759 | `flag_for_review` | TransactionAmt, C14, card6 |
 
-## Inference Contract
+## Inference contract
 
-The live API accepts sparse JSON transaction payloads for demo scoring. The clearest supported fields are:
+Supported demo fields (aliases in parentheses):
 
-- `TransactionAmt` or `amount`
+- `TransactionAmt` (`amount`)
 - `TransactionDT`
 - `ProductCD`
 - `card1`
 - `hour`
 
-At serving time, `src/features/ieee.py` aligns the request to the committed IEEE-CIS feature list. Missing model features are zero-filled, so the demo is useful for API, thresholding, SHAP, and UI review flows, but it is not a full production feature pipeline. A production deployment should send the richer IEEE-CIS-style field set or replace the sparse alignment layer with the same feature engineering used in training.
+`src/features/ieee.py` aligns sparse requests to the trained feature list. Missing columns are zero-filled — fine for API/SHAP/UI demos, but production should send the full engineered feature set or mirror Kaggle training features.
 
 ## Metrics
 
@@ -110,81 +113,88 @@ At serving time, `src/features/ieee.py` aligns the request to the committed IEEE
 | --- | --- | ---: | ---: | ---: | ---: |
 | XGBoost v1 | IEEE-CIS time-based final 20% | 0.440 | 0.306 | 0.541 | 0.723 |
 
-Accuracy is intentionally not used as the headline metric because fraud data is highly imbalanced.
+Accuracy is not the headline metric — fraud data is highly imbalanced. Full training metrics live in `artifacts/metrics.json`.
 
-The committed `data/sample.csv` remains tiny so the repo can run without the full Kaggle download. Full training metrics above come from the IEEE-CIS Kaggle dataset.
+## Local development
 
-## Local Development
+**Requirements:** Python 3.11+, macOS users may need `brew install libomp` for XGBoost.
 
 ```bash
-make install
-make test
-make serve
-make monitor   # Evidently drift HTML + JSON under docs/media/
+make install    # requirements.txt + requirements-dev.txt
+make test       # 17 pytest tests
+make lint
+make serve      # http://localhost:8000/docs
+make ui         # Streamlit → uses HEROKU_API_URL by default in Makefile
+make monitor    # docs/media/drift_report.html + drift_summary.json
+make train      # local baseline on data/sample.csv
 ```
 
-Then visit `http://localhost:8000/docs`.
+Copy `.env.example` to `.env` for local overrides (`MODEL_ARTIFACT_PATH`, `RISK_THRESHOLD`, optional `HF_API_TOKEN`, `API_KEY`).
 
-### On-demand LLM summary (Hugging Face)
+**UI against local API:**
 
-`/predict` stays fast with the template analyst summary. For an optional LLM note via [Hugging Face serverless inference](https://huggingface.co/docs/api-inference/index), set `HF_API_TOKEN` (and optionally `HF_MODEL_ID`) in `.env`, then:
+```bash
+make serve
+FRAUD_API_URL=http://127.0.0.1:8000 streamlit run ui/app.py
+```
+
+### Optional LLM summary (Hugging Face)
+
+`/predict` stays fast with the template summary. For an on-demand LLM note via [Hugging Face serverless inference](https://huggingface.co/docs/api-inference/index), set `HF_API_TOKEN` (and optionally `HF_MODEL_ID`) in `.env`:
 
 ```bash
 curl -X POST http://localhost:8000/explain/llm \
   -H "Content-Type: application/json" \
-  -d '{"transaction":{"TransactionAmt":250,"TransactionDT":7500000,"ProductCD":"W","card1":12345}}'
-```
-
-The response includes both `template_summary` and `llm_summary` plus the usual score, decision, and SHAP drivers.
-
-Streamlit UI (API must be running):
-
-```bash
-make ui
-```
-
-If the API is running on another local port:
-
-```bash
-FRAUD_API_URL=http://127.0.0.1:8001 make ui
-```
-
-Point the UI at the hosted API:
-
-```bash
-FRAUD_API_URL=https://adit-txn-risk-pipeline-41ee5a80b27b.herokuapp.com make ui
+  -d '{"transaction":{"TransactionAmt":250,"TransactionDT":7500000,"ProductCD":"W","card1":12345,"hour":23}}'
 ```
 
 ## Deploy (Heroku)
 
-Two apps from this repo: **API** (root `Procfile`) and **Streamlit UI** (`ui/` via subdirectory buildpack).
+Two apps from one repo: **API** (repo root) and **Streamlit UI** (`ui/` subtree).
 
-| App | URL |
-| --- | --- |
-| API | https://adit-txn-risk-pipeline-41ee5a80b27b.herokuapp.com/docs |
-| UI | https://adit-txn-risk-pipeline-ui-e2c4483417ee.herokuapp.com/ |
+| App | Heroku name | URL |
+| --- | --- | --- |
+| API | `adit-txn-risk-pipeline` | https://adit-txn-risk-pipeline-41ee5a80b27b.herokuapp.com/docs |
+| UI | `adit-txn-risk-pipeline-ui` | https://adit-txn-risk-pipeline-ui-e2c4483417ee.herokuapp.com/ |
+
+### API (first-time setup)
 
 ```bash
-# API (once)
+heroku create adit-txn-risk-pipeline
+heroku buildpacks:add heroku-community/apt -a adit-txn-risk-pipeline
+heroku buildpacks:add heroku/python -a adit-txn-risk-pipeline
+heroku config:set \
+  MODEL_ARTIFACT_PATH=artifacts/xgboost_model.json \
+  RISK_THRESHOLD=0.722727 \
+  -a adit-txn-risk-pipeline
+git remote add heroku https://git.heroku.com/adit-txn-risk-pipeline.git
 git push heroku main
-
-# UI (deploy ui/ as app root via git subtree)
-heroku create adit-txn-risk-pipeline-ui
-heroku buildpacks:add heroku/python -a adit-txn-risk-pipeline-ui
-heroku config:set FRAUD_API_URL=https://adit-txn-risk-pipeline-41ee5a80b27b.herokuapp.com \
-  -a adit-txn-risk-pipeline-ui
-git subtree split --prefix ui -b heroku-ui-deploy
-git push heroku-ui heroku-ui-deploy:main --force
-make deploy-ui   # after remote exists; updates FRAUD_API_URL and redeploys
 ```
 
-Set `HF_API_TOKEN` on the **API** app only if you use `POST /explain/llm`.
+The API uses `Procfile`, slim `requirements.txt`, `Aptfile` (`libgomp1` for XGBoost), and `.slugignore` to keep the slug small.
 
-Set `API_KEY` on the **API** app if you want `POST /predict` and `POST /explain/llm` to require an `X-API-Key` header. Leave it unset for an open portfolio demo.
+### UI (first-time setup)
+
+```bash
+heroku create adit-txn-risk-pipeline-ui
+heroku buildpacks:add heroku/python -a adit-txn-risk-pipeline-ui
+heroku config:set \
+  FRAUD_API_URL=https://adit-txn-risk-pipeline-41ee5a80b27b.herokuapp.com \
+  -a adit-txn-risk-pipeline-ui
+git remote add heroku-ui https://git.heroku.com/adit-txn-risk-pipeline-ui.git
+make deploy-ui
+```
+
+`make deploy-ui` splits `ui/` into a subtree branch and pushes to the UI remote. The UI reads `FRAUD_API_URL` from the environment — no connection sidebar in production.
+
+**Optional API secrets on Heroku:**
+
+- `HF_API_TOKEN` — enables `POST /explain/llm`
+- `API_KEY` — requires `X-API-Key` on predict/LLM routes (leave unset for open demo)
 
 ## Deploy (Fly.io)
 
-Requires [Fly CLI](https://fly.io/docs/hands-on/install-flyctl/) and a Fly account.
+Alternative to Heroku. Requires [Fly CLI](https://fly.io/docs/hands-on/install-flyctl/).
 
 ```bash
 fly apps create fraud-risk-pipeline   # once
@@ -192,44 +202,56 @@ fly deploy
 fly open /docs
 ```
 
-The `Dockerfile` bundles `artifacts/xgboost_model.json` and serves FastAPI on port 8000. Override `RISK_THRESHOLD` or `MODEL_ARTIFACT_PATH` with `fly secrets set` if needed.
+The `Dockerfile` bundles the model artifact and serves FastAPI on port 8000. Override `RISK_THRESHOLD` or `MODEL_ARTIFACT_PATH` with `fly secrets set` if needed.
 
 ## Drift monitoring
 
-`make monitor` compares `data/monitoring_reference.csv` (reference) to `data/monitoring_current.csv` (current) on `amount`, `hour`, `merchant`, and `country`, then writes:
+`make monitor` compares `data/monitoring_reference.csv` to `data/monitoring_current.csv` and writes:
 
 - `docs/media/drift_report.html` — interactive Evidently report
-- `docs/media/drift_summary.json` — compact drift summary for CI or dashboards
+- `docs/media/drift_summary.json` — compact summary for CI or dashboards
 
-## Full Training
+## Full training
 
-The full IEEE-CIS run is executed on Kaggle with GPU enabled:
+Full IEEE-CIS training runs on Kaggle with GPU:
 
 https://www.kaggle.com/code/aditya2402/fraud-risk-pipeline-ieee-cis-train
 
-The reproducible kernel source lives in `kaggle_kernel/`. It writes the committed model and metric artifacts in `artifacts/`.
+Reproducible source: `kaggle_kernel/train_ieee.py` → committed artifacts in `artifacts/`.
 
-## Project Status
+`make train` is a separate local baseline on `data/sample.csv` only.
 
-Current state: FastAPI serves the committed IEEE-CIS XGBoost model with Tree SHAP reasons, cost-aligned analyst summaries, Streamlit scoring UI, optional on-demand HF LLM summaries, Evidently drift reports, Fly.io deploy config, and smoke tests.
+## Project structure
 
-Local status checked on June 2, 2026:
+```
+src/api/          FastAPI routes + schemas
+src/model/        RiskModel — load artifact, predict
+src/features/     IEEE serving alignment + local train features
+src/explain/      Tree SHAP, template summary, optional HF LLM
+src/monitor/      Evidently drift pipeline
+src/train/        Local sample.csv training
+ui/               Streamlit portfolio demo (separate Heroku app)
+artifacts/        Model, threshold, metrics, feature list
+kaggle_kernel/    Full IEEE-CIS training script
+```
 
-- `make test` passes.
-- `make lint` passes.
-- GitHub Actions CI runs lint and tests on `main` pushes and pull requests.
-- API and Streamlit UI are deployed on Heroku; Fly.io config remains available as an alternative deploy path.
+Architecture notes: `docs/architecture.md`
 
-## Agent tooling (Serena)
+## Status
 
-Python LSP is enabled in `.serena/project.yml` (`languages: [python]`, Pyright via `.venv/bin/python`). After changing Serena config, restart the Serena MCP server in Cursor so symbol navigation works.
+Verified June 2, 2026:
 
-Graphify output is generated under `graphify-out/` and ignored by git. Refresh it with `graphify update .` after meaningful code changes.
+- `make test` — 17 passed
+- `make lint` — clean
+- GitHub Actions CI on `main`
+- Heroku API + UI deployed and reachable
+- Fly.io config present; Heroku is the primary live demo path
 
-## V2 Roadmap
+## V2 roadmap
 
 - streaming ingestion
 - Airflow/dbt/warehouse
 - feature store
-- auth/API tokens
+- richer serving features (full IEEE engineering parity)
+- drift on real production traffic
 - fine-tuned or self-hosted LLM
